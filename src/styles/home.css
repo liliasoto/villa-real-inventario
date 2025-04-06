@@ -1,0 +1,141 @@
+/* src/styles/home.css */
+.hero-section {
+    background-color: var(--color-background);
+    padding: 4rem 0;
+  }
+  
+  .hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 1rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--color-text-light);
+    margin-bottom: 2rem;
+  }
+  
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .hero-image {
+    width: 100%;
+    height: auto;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .features-section {
+    padding: 4rem 0;
+  }
+  
+  .features-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+  
+  .features-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .features-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  .features-subtitle {
+    font-size: 1.125rem;
+    color: var(--color-text-light);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .feature-card {
+    background-color: var(--color-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    padding: 1.5rem;
+    transition: var(--transition-default);
+    border-top: 4px solid var(--color-primary);
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .feature-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .feature-description {
+    color: var(--color-text-light);
+    margin-bottom: 1rem;
+  }
+  
+  .feature-link {
+    color: var(--color-primary);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .feature-link:hover {
+    text-decoration: underline;
+  }
+  
+  @media (min-width: 768px) {
+    .hero-container {
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    .hero-title {
+      font-size: 3rem;
+    }
+    
+    .features-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .features-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
