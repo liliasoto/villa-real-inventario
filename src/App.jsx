@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage"
 import HomePage from "./pages/HomePage"
 import AgregarProductoPage from "./pages/AgregarProductoPage"
 import "./styles/global.css"
+import AgregarCategoriaPage from "./pages/AgregarCategoríaPage"
 
 function App() {
   return (
@@ -27,6 +28,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AgregarProductoPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/categorias"
+            element={
+              <ProtectedRoute>
+                <AgregarCategoriaPage />
               </ProtectedRoute>
             }
           />

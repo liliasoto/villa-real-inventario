@@ -91,11 +91,7 @@ const AgregarProductoPage = () => {
           setProductos([])
         }
 
-        showToast({
-          type: "info",
-          title: "Datos cargados",
-          message: "La información necesaria ha sido cargada correctamente.",
-        })
+        console.log("La información necesaria ha sido cargada correctamente.")
       } catch (error) {
         console.error("Error al cargar datos:", error)
         showToast({
