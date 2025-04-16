@@ -7,6 +7,7 @@ import HomePage from "./pages/HomePage"
 import AgregarProductoPage from "./pages/AgregarProductoPage"
 import "./styles/global.css"
 import AgregarCategoriaPage from "./pages/AgregarCategoríaPage"
+import AgregarProveedorPage from "./pages/AgregarProveedorPage"
 
 function App() {
   return (
@@ -36,6 +37,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AgregarCategoriaPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/proveedores"
+            element={
+              <ProtectedRoute>
+                <AgregarProveedorPage />
               </ProtectedRoute>
             }
           />
