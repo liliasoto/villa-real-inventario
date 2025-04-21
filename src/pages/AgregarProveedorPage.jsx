@@ -8,6 +8,7 @@ import { FiSave, FiX, FiArrowRight, FiLoader } from "react-icons/fi"
 import { proveedoresService } from "../services/api"
 import { showToast } from "../utils/toast"
 import "../styles/agregar-proveedor.css"
+import "../styles/toast.css"
 
 const AgregarProveedorPage = () => {
   const navigate = useNavigate()
@@ -57,6 +58,26 @@ const AgregarProveedorPage = () => {
     setFormProveedor({
       ...formProveedor,
       direccion_entrega: formProveedor.direccion_cliente,
+    })
+
+    showToast({
+      type: "info",
+      title: "Dirección copiada",
+      message: "La dirección del cliente ha sido copiada a la dirección de entrega.",
+    })
+  }
+
+  // Manejador para cambiar de pestaña
+  const handleTabChange = (tab) => {
+    setActiveTab(tab)
+
+    showToast({
+      type: "info",
+      title: "Cambio de sección",
+      message:
+        tab === "direccion"
+          ? "Ahora está en la sección de información de dirección."
+          : "Ahora está en la sección de información de pago.",
     })
   }
 
@@ -140,7 +161,7 @@ const AgregarProveedorPage = () => {
       showToast({
         type: "success",
         title: "Guardado exitoso",
-        message: "El proveedor ha sido guardado correctamente.",
+        message: `El proveedor "${formProveedor.nombre_compania}" ha sido guardado correctamente.`,
       })
 
       // Resetear el formulario
@@ -213,7 +234,7 @@ const AgregarProveedorPage = () => {
           transition={{ duration: 0.5 }}
           className="page-header"
         >
-          <h1 className="page-title">Agregar Proveedor</h1>
+          <h1 className="page-title">Agregar proveedor</h1>
           <p className="page-subtitle">Complete el formulario para agregar un nuevo proveedor al sistema</p>
         </motion.div>
 
@@ -221,11 +242,11 @@ const AgregarProveedorPage = () => {
           <div className="tabs-container">
             <div
               className={`tab ${activeTab === "direccion" ? "active" : ""}`}
-              onClick={() => setActiveTab("direccion")}
+              onClick={() => handleTabChange("direccion")}
             >
               Información de dirección
             </div>
-            <div className={`tab ${activeTab === "pago" ? "active" : ""}`} onClick={() => setActiveTab("pago")}>
+            <div className={`tab ${activeTab === "pago" ? "active" : ""}`} onClick={() => handleTabChange("pago")}>
               Información de pago
             </div>
           </div>
@@ -495,15 +516,24 @@ const AgregarProveedorPage = () => {
                     <div className="form-group">
                       <label htmlFor="limite_credito">Límite de crédito</label>
                       <input
-                        type="number"
+                        type="text"
                         id="limite_credito"
                         name="limite_credito"
                         className="input-field"
                         value={formProveedor.limite_credito}
-                        onChange={handleChange}
-                        step="0.01"
-                        min="0"
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                            handleChange({
+                              target: {
+                                name: e.target.name,
+                                value: value,
+                              },
+                            })
+                          }
+                        }}
                         disabled={submitting}
+                        placeholder="0.00"
                       />
                     </div>
 

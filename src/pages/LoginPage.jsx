@@ -1,60 +1,66 @@
+"use client"
+
 // src/pages/LoginPage.jsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
-import '../styles/login.css';
-import logo from '../assets/logo.png'; // Asegúrate de tener un logo en esta ruta
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
+import { motion } from "framer-motion"
+import "../styles/login.css"
+import "../styles/toast.css"
+import logo from "../assets/logo.png"
+import { showToast } from "../utils/toast"
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-    
+    e.preventDefault()
+
     if (!username || !password) {
-      setError('Por favor ingresa usuario y contraseña');
-      return;
+      showToast({
+        type: "error",
+        title: "Error de validación",
+        message: "Por favor ingresa usuario y contraseña",
+      })
+      return
     }
-    
-    const success = login(username, password);
-    
+
+    const success = login(username, password)
+
     if (success) {
-      navigate('/');
+      showToast({
+        type: "success",
+        title: "Inicio de sesión exitoso",
+        message: "Bienvenido al sistema de inventario Villa Real",
+      })
+      navigate("/")
     } else {
-      setError('Usuario o contraseña incorrectos');
+      showToast({
+        type: "error",
+        title: "Error de autenticación",
+        message: "Usuario o contraseña incorrectos",
+      })
     }
-  };
+  }
 
   return (
     <div className="login-page">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="login-container"
       >
         <div className="login-logo">
-          <img
-            src={logo || "/placeholder.svg"}
-            alt="Villa Real Logo"
-          />
+          <img src={logo || "/placeholder.svg"} alt="Villa Real Logo" />
         </div>
-        <h2 className="login-title">Iniciar Sesión</h2>
+        <h2 className="login-title">Iniciar sesión</h2>
         <p className="login-subtitle">Sistema de Inventario Villa Real</p>
-        
+
         <form className="login-form" onSubmit={handleSubmit}>
-          {error && (
-            <div className="alert alert-error">
-              {error}
-            </div>
-          )}
-          
           <div className="form-group">
             <label htmlFor="username">Usuario</label>
             <input
@@ -67,7 +73,7 @@ const LoginPage = () => {
               onChange={(e) => setUsername(e.target.value)}
             />
           </div>
-          
+          <br></br>
           <div className="form-group">
             <label htmlFor="password">Contraseña</label>
             <input
@@ -81,16 +87,13 @@ const LoginPage = () => {
             />
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary login-button"
-          >
-            Iniciar Sesión
+          <button type="submit" className="btn btn-primary login-button">
+            Iniciar sesión
           </button>
         </form>
       </motion.div>
     </div>
-  );
-};
+  )
+}
 
-export default LoginPage;
+export default LoginPage

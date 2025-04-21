@@ -8,6 +8,7 @@ import AgregarProductoPage from "./pages/AgregarProductoPage"
 import "./styles/global.css"
 import AgregarCategoriaPage from "./pages/AgregarCategoríaPage"
 import AgregarProveedorPage from "./pages/AgregarProveedorPage"
+import VerProductosPage from "./pages/VerProductosPage"
 
 function App() {
   return (
@@ -45,6 +46,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AgregarProveedorPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/productos"
+            element={
+              <ProtectedRoute>
+                <VerProductosPage />
               </ProtectedRoute>
             }
           />

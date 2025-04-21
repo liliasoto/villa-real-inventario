@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (username, password) => {
-    // Por ahora, implementamos una autenticación simple
+    // Autenticación simple
     if (username === 'xotchil' && password === 'PegazaWEB123') {
       const userData = { username, name: 'Administrador' };
       setUser(userData);

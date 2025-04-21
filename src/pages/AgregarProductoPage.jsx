@@ -13,6 +13,7 @@ import {
 } from "../services/api"
 import { showToast } from "../utils/toast"
 import "../styles/agregar-producto.css"
+import "../styles/toast.css"
 
 const AgregarProductoPage = () => {
   const navigate = useNavigate()
@@ -90,8 +91,6 @@ const AgregarProductoPage = () => {
           console.error("Formato de datos de productos incorrecto:", productosRes.data)
           setProductos([])
         }
-
-        console.log("La información necesaria ha sido cargada correctamente.")
       } catch (error) {
         console.error("Error al cargar datos:", error)
         showToast({
@@ -135,6 +134,7 @@ const AgregarProductoPage = () => {
       costo: 0,
       cantidad: 1,
       subtotal: 0,
+      itemId: null, // Nuevo campo para almacenar el item_id
     }
 
     setFormManufactura({
@@ -167,6 +167,10 @@ const AgregarProductoPage = () => {
             materialActualizado.tipo = productoSeleccionado.tipo || "Compra/Venta"
             materialActualizado.costo = Number.parseFloat(productoSeleccionado.costo) || 0
             materialActualizado.subtotal = materialActualizado.costo * materialActualizado.cantidad
+
+            // Guardar el item_id del producto seleccionado
+            materialActualizado.itemId = productoSeleccionado.item_id
+            console.log("Item ID guardado:", materialActualizado.itemId)
           } else {
             console.warn("No se encontró el producto con ID:", valor)
           }
@@ -190,7 +194,6 @@ const AgregarProductoPage = () => {
     return formManufactura.materiales.reduce((total, material) => total + (material.subtotal || 0), 0)
   }
 
-  // Crear un producto manufacturado directamente
   const crearProductoManufacturado = async (datos) => {
     try {
       console.log("Enviando datos de manufactura directamente:", datos)
@@ -202,6 +205,7 @@ const AgregarProductoPage = () => {
         descripcion: datos.descripcion,
         es_subproducto: datos.es_subproducto,
         clasificacion_id: datos.clasificacion_id,
+        costo: datos.costo,
         precio_venta: datos.precio_venta,
         pertenece_inventario: datos.pertenece_inventario,
         minimo: datos.minimo,
@@ -209,18 +213,22 @@ const AgregarProductoPage = () => {
         existencia: datos.existencia,
         valor_total: datos.valor_total,
         fecha_inicio: datos.fecha_inicio,
-        // No incluimos item_id para que el backend cree un solo item
 
         // Transformar los materiales para que tengan el formato correcto
-        materiales: datos.materiales.map((material) => ({
-          item_id: Number(material.producto_id), // Usar item_id en lugar de producto_id
-          descripcion: material.descripcion,
-          cantidad: material.cantidad,
-          subtotal: material.subtotal,
-        })),
+        // Usar el itemId en lugar del producto_id
+        materiales:
+          datos.materiales.length > 0
+            ? datos.materiales.map((material) => ({
+                item_id: material.itemId, // Usar el itemId guardado
+                descripcion: material.descripcion,
+                cantidad: material.cantidad,
+                subtotal: material.subtotal,
+              }))
+            : [],
       }
 
       console.log("Datos formateados para enviar:", datosParaEnviar)
+      console.log("Costo que se enviará:", datosParaEnviar.costo)
 
       const response = await fetch(`https://sistema-inventario-production.up.railway.app/api/productos-manufactura`, {
         method: "POST",
@@ -230,15 +238,21 @@ const AgregarProductoPage = () => {
         body: JSON.stringify(datosParaEnviar),
       })
 
-      const responseData = await response.json()
-
       if (!response.ok) {
+        const responseData = await response.json()
         console.error("Error al crear producto manufacturado:", responseData)
+
+        // Mostrar más detalles del error si están disponibles
+        if (responseData.error) {
+          console.error("Detalles del error:", responseData.error)
+        }
+
         throw new Error(
           `Error al crear producto manufacturado: ${responseData.message || JSON.stringify(responseData)}`,
         )
       }
 
+      const responseData = await response.json()
       return responseData
     } catch (error) {
       console.error("Error en crearProductoManufacturado:", error)
@@ -316,24 +330,28 @@ const AgregarProductoPage = () => {
       return false
     }
 
-    if (formManufactura.materiales.length === 0) {
-      showToast({
-        type: "warning",
-        title: "Advertencia",
-        message: "No ha agregado materiales al producto manufacturado.",
-      })
-      // No bloqueamos el envío, solo advertimos
-    }
+    if (formManufactura.materiales.length > 0) {
+      // Validar que todos los materiales tengan un producto seleccionado
+      const materialesSinProducto = formManufactura.materiales.filter((m) => !m.productoId)
+      if (materialesSinProducto.length > 0) {
+        showToast({
+          type: "error",
+          title: "Error de validación",
+          message: "Todos los materiales deben tener un producto seleccionado.",
+        })
+        return false
+      }
 
-    // Validar que todos los materiales tengan un producto seleccionado
-    const materialesSinProducto = formManufactura.materiales.filter((m) => !m.productoId)
-    if (materialesSinProducto.length > 0) {
-      showToast({
-        type: "error",
-        title: "Error de validación",
-        message: "Todos los materiales deben tener un producto seleccionado.",
-      })
-      return false
+      // Validar que todos los materiales tengan un itemId
+      const materialesSinItemId = formManufactura.materiales.filter((m) => !m.itemId)
+      if (materialesSinItemId.length > 0) {
+        showToast({
+          type: "error",
+          title: "Error de validación",
+          message: "No se pudo obtener el ID de item para algunos materiales.",
+        })
+        return false
+      }
     }
 
     return true
@@ -371,7 +389,6 @@ const AgregarProductoPage = () => {
       es_subproducto: formManufactura.esSubproducto,
       clasificacion_id: formManufactura.esSubproducto ? formManufactura.clasificacionId : null,
       descripcion: formManufactura.descripcion.trim(),
-      costo: Number.parseFloat(formManufactura.costo) || 0,
       precio_venta: Number.parseFloat(formManufactura.precioVenta) || 0,
       pertenece_inventario: formManufactura.enInventario,
       minimo: Number.parseFloat(formManufactura.minimo) || 0,
@@ -384,6 +401,7 @@ const AgregarProductoPage = () => {
     // Preparar materiales para enviar al backend
     const materialesParaEnviar = formManufactura.materiales.map((material) => ({
       producto_id: Number(material.productoId) || null,
+      itemId: material.itemId, // Incluir el itemId
       descripcion: material.descripcion.trim(),
       cantidad: Number.parseFloat(material.cantidad) || 0,
       costo: Number.parseFloat(material.costo) || 0,
@@ -391,6 +409,20 @@ const AgregarProductoPage = () => {
     }))
 
     datos.materiales = materialesParaEnviar
+
+    // Determinar el costo basado en la presencia de materiales
+    const costoMateriales = calcularTotalCostoMateriales()
+    const costoManual = Number.parseFloat(formManufactura.costo) || 0
+
+    // Si hay materiales y el costo calculado es mayor que cero, usar ese costo
+    if (materialesParaEnviar.length > 0 && costoMateriales > 0) {
+      datos.costo = costoMateriales
+      console.log("Usando costo calculado de materiales:", costoMateriales)
+    } else {
+      // Si no hay materiales o el costo calculado es cero, usar el costo ingresado manualmente
+      datos.costo = costoManual
+      console.log("Usando costo ingresado manualmente:", costoManual)
+    }
 
     return datos
   }
@@ -425,7 +457,7 @@ const AgregarProductoPage = () => {
       nombre: formServicio.nombre.trim(),
       estado: formServicio.estado,
       descripcion_servicio: formServicio.descripcion.trim(), // Cambiado a descripcion_servicio
-      precio: Number.parseFloat(formServicio.precio) || 0,
+      precio_venta: Number.parseFloat(formServicio.precio) || 0,
     }
   }
 
@@ -577,6 +609,16 @@ const AgregarProductoPage = () => {
     })
   }
 
+  // Función para cargar y mostrar los detalles de los productos
+  useEffect(() => {
+    if (productos.length > 0) {
+      console.log("Detalles de productos disponibles para materiales:")
+      productos.forEach((producto) => {
+        console.log(`ID: ${producto.id}, Nombre: ${producto.nombre}, Item ID: ${producto.item_id}`)
+      })
+    }
+  }, [productos])
+
   return (
     <Layout>
       <div className="agregar-producto-container">
@@ -586,7 +628,7 @@ const AgregarProductoPage = () => {
           transition={{ duration: 0.5 }}
           className="page-header"
         >
-          <h1 className="page-title">Agregar Producto o Servicio</h1>
+          <h1 className="page-title">Agregar producto o servicio</h1>
           <p className="page-subtitle">
             Complete el formulario para agregar un nuevo producto o servicio al inventario
           </p>
@@ -638,7 +680,7 @@ const AgregarProductoPage = () => {
             onSubmit={handleSubmit}
           >
             <div className="form-section">
-              <h2 className="section-title">Información General</h2>
+              <h2 className="section-title">Información general</h2>
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="nombre">Nombre del producto *</label>
@@ -715,7 +757,7 @@ const AgregarProductoPage = () => {
             </div>
 
             <div className="form-section">
-              <h2 className="section-title">Información de Compra</h2>
+              <h2 className="section-title">Información de compra</h2>
               <div className="form-group">
                 <label htmlFor="descripcionCompra">Descripción del producto al comprarlo</label>
                 <textarea
@@ -732,16 +774,26 @@ const AgregarProductoPage = () => {
                 <div className="form-group">
                   <label htmlFor="costo">Costo *</label>
                   <input
-                    type="number"
+                    type="text"
                     id="costo"
                     name="costo"
                     className="input-field"
                     value={formCompraVenta.costo}
-                    onChange={handleCompraVentaChange}
-                    step="0.01"
-                    min="0"
+                    onChange={(e) => {
+                      const value = e.target.value
+                      // Solo permitir números y punto decimal
+                      if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                        handleCompraVentaChange({
+                          target: {
+                            name: e.target.name,
+                            value: value,
+                          },
+                        })
+                      }
+                    }}
                     required
                     disabled={submitting}
+                    placeholder="0.00"
                   />
                 </div>
 
@@ -754,11 +806,14 @@ const AgregarProductoPage = () => {
                     value={formCompraVenta.proveedorId}
                     onChange={handleCompraVentaChange}
                     disabled={submitting}
+                    style={{ color: "#333333" }} // Forzar color de texto
                   >
-                    <option value="">Seleccione un proveedor</option>
+                    <option value="" style={{ color: "#333333" }}>
+                      Seleccione un proveedor
+                    </option>
                     {proveedores.map((proveedor) => (
-                      <option key={proveedor.id} value={proveedor.id}>
-                        {proveedor.nombre}
+                      <option key={proveedor.id} value={proveedor.id} style={{ color: "#333333" }}>
+                        {proveedor.nombre_compania || proveedor.nombre || "Proveedor sin nombre"}
                       </option>
                     ))}
                   </select>
@@ -767,7 +822,7 @@ const AgregarProductoPage = () => {
             </div>
 
             <div className="form-section">
-              <h2 className="section-title">Información de Venta</h2>
+              <h2 className="section-title">Información de venta</h2>
               <div className="form-group">
                 <label htmlFor="descripcionVenta">Descripción del producto al venderlo</label>
                 <textarea
@@ -783,16 +838,25 @@ const AgregarProductoPage = () => {
               <div className="form-group">
                 <label htmlFor="precioVenta">Precio de venta *</label>
                 <input
-                  type="number"
+                  type="text"
                   id="precioVenta"
                   name="precioVenta"
                   className="input-field"
                   value={formCompraVenta.precioVenta}
-                  onChange={handleCompraVentaChange}
-                  step="0.01"
-                  min="0"
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                      handleCompraVentaChange({
+                        target: {
+                          name: e.target.name,
+                          value: value,
+                        },
+                      })
+                    }
+                  }}
                   required
                   disabled={submitting}
+                  placeholder="0.00"
                 />
               </div>
             </div>
@@ -813,65 +877,101 @@ const AgregarProductoPage = () => {
 
               {formCompraVenta.enInventario && (
                 <div className="inventario-section">
-                  <h2 className="section-title">Información de Inventario</h2>
+                  <h2 className="section-title">Información de inventario</h2>
                   <div className="form-grid">
                     <div className="form-group">
                       <label htmlFor="minimo">Mínimo</label>
                       <input
-                        type="number"
+                        type="text"
                         id="minimo"
                         name="minimo"
                         className="input-field"
                         value={formCompraVenta.minimo}
-                        onChange={handleCompraVentaChange}
-                        step="0.0001"
-                        min="0"
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                            handleCompraVentaChange({
+                              target: {
+                                name: e.target.name,
+                                value: value,
+                              },
+                            })
+                          }
+                        }}
                         disabled={submitting}
+                        placeholder="0.00"
                       />
                     </div>
 
                     <div className="form-group">
                       <label htmlFor="maximo">Máximo</label>
                       <input
-                        type="number"
+                        type="text"
                         id="maximo"
                         name="maximo"
                         className="input-field"
                         value={formCompraVenta.maximo}
-                        onChange={handleCompraVentaChange}
-                        step="0.0001"
-                        min="0"
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                            handleCompraVentaChange({
+                              target: {
+                                name: e.target.name,
+                                value: value,
+                              },
+                            })
+                          }
+                        }}
                         disabled={submitting}
+                        placeholder="0.00"
                       />
                     </div>
 
                     <div className="form-group">
                       <label htmlFor="existencia">En existencia</label>
                       <input
-                        type="number"
+                        type="text"
                         id="existencia"
                         name="existencia"
                         className="input-field"
                         value={formCompraVenta.existencia}
-                        onChange={handleCompraVentaChange}
-                        step="0.0001"
-                        min="0"
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                            handleCompraVentaChange({
+                              target: {
+                                name: e.target.name,
+                                value: value,
+                              },
+                            })
+                          }
+                        }}
                         disabled={submitting}
+                        placeholder="0.00"
                       />
                     </div>
 
                     <div className="form-group">
                       <label htmlFor="valorTotal">Valor total</label>
                       <input
-                        type="number"
+                        type="text"
                         id="valorTotal"
                         name="valorTotal"
                         className="input-field"
                         value={formCompraVenta.valorTotal}
-                        onChange={handleCompraVentaChange}
-                        step="0.01"
-                        min="0"
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                            handleCompraVentaChange({
+                              target: {
+                                name: e.target.name,
+                                value: value,
+                              },
+                            })
+                          }
+                        }}
                         disabled={submitting}
+                        placeholder="0.00"
                       />
                     </div>
 
@@ -920,7 +1020,7 @@ const AgregarProductoPage = () => {
             onSubmit={handleSubmit}
           >
             <div className="form-section">
-              <h2 className="section-title">Información General</h2>
+              <h2 className="section-title">Información general</h2>
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="nombre">Nombre del producto *</label>
@@ -1011,32 +1111,50 @@ const AgregarProductoPage = () => {
                 <div className="form-group">
                   <label htmlFor="costo">Costo *</label>
                   <input
-                    type="number"
+                    type="text"
                     id="costo"
                     name="costo"
                     className="input-field"
                     value={formManufactura.costo}
-                    onChange={handleManufacturaChange}
-                    step="0.01"
-                    min="0"
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                        handleManufacturaChange({
+                          target: {
+                            name: e.target.name,
+                            value: value,
+                          },
+                        })
+                      }
+                    }}
                     required
                     disabled={submitting}
+                    placeholder="0.00"
                   />
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="precioVenta">Precio de venta *</label>
                   <input
-                    type="number"
+                    type="text"
                     id="precioVenta"
                     name="precioVenta"
                     className="input-field"
                     value={formManufactura.precioVenta}
-                    onChange={handleManufacturaChange}
-                    step="0.01"
-                    min="0"
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                        handleManufacturaChange({
+                          target: {
+                            name: e.target.name,
+                            value: value,
+                          },
+                        })
+                      }
+                    }}
                     required
                     disabled={submitting}
+                    placeholder="0.00"
                   />
                 </div>
               </div>
@@ -1044,14 +1162,14 @@ const AgregarProductoPage = () => {
 
             <div className="form-section">
               <div className="section-header">
-                <h2 className="section-title">Lista de Materiales</h2>
+                <h2 className="section-title">Lista de materiales</h2>
                 <button
                   type="button"
                   className="btn btn-outline btn-sm"
                   onClick={agregarMaterial}
                   disabled={submitting}
                 >
-                  <FiPlus className="btn-icon" /> Agregar Material
+                  <FiPlus className="btn-icon" /> Agregar material
                 </button>
               </div>
 
@@ -1106,15 +1224,21 @@ const AgregarProductoPage = () => {
                           <td>{material.costo.toFixed(2)}</td>
                           <td>
                             <input
-                              type="number"
+                              type="text"
                               className="input-field"
                               value={material.cantidad}
-                              onChange={(e) =>
-                                actualizarMaterial(material.id, "cantidad", Number.parseFloat(e.target.value))
-                              }
-                              step="0.0001"
-                              min="0"
+                              onChange={(e) => {
+                                const value = e.target.value
+                                if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                                  actualizarMaterial(
+                                    material.id,
+                                    "cantidad",
+                                    value === "" ? 0 : Number.parseFloat(value),
+                                  )
+                                }
+                              }}
                               disabled={submitting}
+                              placeholder="0.00"
                             />
                           </td>
                           <td>{material.subtotal.toFixed(2)}</td>
@@ -1145,7 +1269,7 @@ const AgregarProductoPage = () => {
                 </div>
               ) : (
                 <p className="empty-message">
-                  No hay materiales agregados. Haga clic en "Agregar Material" para comenzar.
+                  No hay materiales agregados. Haga clic en "Agregar material" para comenzar.
                 </p>
               )}
             </div>
@@ -1166,65 +1290,101 @@ const AgregarProductoPage = () => {
 
               {formManufactura.enInventario && (
                 <div className="inventario-section">
-                  <h2 className="section-title">Información de Inventario</h2>
+                  <h2 className="section-title">Información de inventario</h2>
                   <div className="form-grid">
                     <div className="form-group">
                       <label htmlFor="minimo">Mínimo</label>
                       <input
-                        type="number"
+                        type="text"
                         id="minimo"
                         name="minimo"
                         className="input-field"
                         value={formManufactura.minimo}
-                        onChange={handleManufacturaChange}
-                        step="0.0001"
-                        min="0"
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                            handleManufacturaChange({
+                              target: {
+                                name: e.target.name,
+                                value: value,
+                              },
+                            })
+                          }
+                        }}
                         disabled={submitting}
+                        placeholder="0.00"
                       />
                     </div>
 
                     <div className="form-group">
                       <label htmlFor="maximo">Máximo</label>
                       <input
-                        type="number"
+                        type="text"
                         id="maximo"
                         name="maximo"
                         className="input-field"
                         value={formManufactura.maximo}
-                        onChange={handleManufacturaChange}
-                        step="0.0001"
-                        min="0"
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                            handleManufacturaChange({
+                              target: {
+                                name: e.target.name,
+                                value: value,
+                              },
+                            })
+                          }
+                        }}
                         disabled={submitting}
+                        placeholder="0.00"
                       />
                     </div>
 
                     <div className="form-group">
                       <label htmlFor="existencia">En existencia</label>
                       <input
-                        type="number"
+                        type="text"
                         id="existencia"
                         name="existencia"
                         className="input-field"
                         value={formManufactura.existencia}
-                        onChange={handleManufacturaChange}
-                        step="0.0001"
-                        min="0"
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                            handleManufacturaChange({
+                              target: {
+                                name: e.target.name,
+                                value: value,
+                              },
+                            })
+                          }
+                        }}
                         disabled={submitting}
+                        placeholder="0.00"
                       />
                     </div>
 
                     <div className="form-group">
                       <label htmlFor="valorTotal">Valor total</label>
                       <input
-                        type="number"
+                        type="text"
                         id="valorTotal"
                         name="valorTotal"
                         className="input-field"
                         value={formManufactura.valorTotal}
-                        onChange={handleManufacturaChange}
-                        step="0.01"
-                        min="0"
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                            handleManufacturaChange({
+                              target: {
+                                name: e.target.name,
+                                value: value,
+                              },
+                            })
+                          }
+                        }}
                         disabled={submitting}
+                        placeholder="0.00"
                       />
                     </div>
 
@@ -1273,7 +1433,7 @@ const AgregarProductoPage = () => {
             onSubmit={handleSubmit}
           >
             <div className="form-section">
-              <h2 className="section-title">Información del Servicio</h2>
+              <h2 className="section-title">Información del servicio</h2>
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="nombre">Nombre del servicio *</label>
@@ -1333,16 +1493,25 @@ const AgregarProductoPage = () => {
               <div className="form-group">
                 <label htmlFor="precio">Precio del servicio *</label>
                 <input
-                  type="number"
+                  type="text"
                   id="precio"
                   name="precio"
                   className="input-field"
                   value={formServicio.precio}
-                  onChange={handleServicioChange}
-                  step="0.01"
-                  min="0"
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                      handleServicioChange({
+                        target: {
+                          name: e.target.name,
+                          value: value,
+                        },
+                      })
+                    }
+                  }}
                   required
                   disabled={submitting}
+                  placeholder="0.00"
                 />
               </div>
             </div>

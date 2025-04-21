@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import '../styles/home.css';
 import heroImage from '../assets/hero-image.png';
+import { FaPlus } from 'react-icons/fa';
 
 const HomePage = () => {
   return (
@@ -24,10 +25,10 @@ const HomePage = () => {
             </p>
             <div className="hero-buttons">
               <Link to="/productos" className="btn btn-primary">
-                Ver Productos
+                Ver productos
               </Link>
               <Link to="/agregar-producto" className="btn btn-outline">
-                Agregar Producto
+                Agregar producto
               </Link>
             </div>
           </motion.div>
@@ -50,7 +51,7 @@ const HomePage = () => {
         <div className="features-container">
           <div className="features-header">
             <h2 className="features-title">
-              Sistema de Inventario
+              Sistema de inventario
             </h2>
             <p className="features-subtitle">
               Gestiona fácilmente tus productos, servicios, proveedores y categorías
@@ -66,10 +67,10 @@ const HomePage = () => {
                 icon: '📦'
               },
               {
-                title: 'Agregar Producto',
+                title: 'Agregar producto',
                 description: 'Añade nuevos productos al inventario',
                 path: '/agregar-producto',
-                icon: '➕'
+                icon: <FaPlus color="#83CBFF" />
               },
               {
                 title: 'Proveedores',

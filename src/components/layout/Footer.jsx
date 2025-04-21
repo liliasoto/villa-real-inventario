@@ -22,7 +22,7 @@ const Footer = () => {
           </div>
           
           <div className="footer-section">
-            <h3 className="footer-title">Horario de Atención</h3>
+            <h3 className="footer-title">Horario de atención</h3>
             <p>Lunes a Viernes: 9:00 AM - 6:00 PM</p>
             <p>Sábados: 9:00 AM - 2:00 PM</p>
           </div>

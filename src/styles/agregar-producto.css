@@ -52,6 +52,12 @@
   font-family: inherit;
   font-size: 1rem;
   background-color: var(--color-white);
+  color: var(--color-text); /* Asegurar que el texto sea visible */
+}
+
+.tipo-select option {
+  color: var(--color-text); /* Asegurar que las opciones sean visibles */
+  background-color: var(--color-white);
 }
 
 @media (min-width: 768px) {
@@ -129,6 +135,41 @@
   font-weight: 500;
 }
 
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius);
+  font-family: inherit;
+  font-size: 1rem;
+  color: #333333;
+  background-color: var(--color-white);
+}
+
+.input-field::placeholder {
+  color: #aaa;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+select.input-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+select.input-field option {
+  color: var(--color-text); /* Asegurar que las opciones sean visibles */
+  background-color: var(--color-white);
+}
+
 .textarea {
   min-height: 100px;
   resize: vertical;
@@ -193,6 +234,12 @@
 .materiales-table tfoot td {
   border-bottom: none;
   padding-top: 1rem;
+}
+
+.materiales-table input.input-field,
+.materiales-table select.input-field {
+  padding: 0.5rem;
+  font-size: 0.875rem;
 }
 
 .total-label {
@@ -260,4 +307,3 @@
     transform: rotate(360deg);
   }
 }
-

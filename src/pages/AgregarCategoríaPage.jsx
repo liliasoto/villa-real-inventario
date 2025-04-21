@@ -4,11 +4,10 @@ import { useState } from "react"
 import Layout from "../components/layout/Layout"
 import { motion } from "framer-motion"
 import { FiSave, FiX, FiLoader } from "react-icons/fi"
-import {
-    clasificacionesService
-} from "../services/api"
+import { clasificacionesService } from "../services/api"
 import { showToast } from "../utils/toast"
 import "../styles/agregar-producto.css"
+import "../styles/toast.css" 
 
 const AgregarCategoriaPage = () => {
   const [submitting, setSubmitting] = useState(false)
@@ -55,7 +54,7 @@ const AgregarCategoriaPage = () => {
     let esValido = false
 
     esValido = validarFormCategoria()
-      
+
     if (!esValido) return
 
     setSubmitting(true)
@@ -72,7 +71,7 @@ const AgregarCategoriaPage = () => {
       showToast({
         type: "success",
         title: "Guardado exitoso",
-        message: `La categoría ha sido guardada correctamente.`,
+        message: `La categoría "${formCategoria.nombre}" ha sido guardada correctamente.`,
       })
 
       // Resetear el formulario
@@ -120,59 +119,57 @@ const AgregarCategoriaPage = () => {
     <Layout>
       <div className="agregar-producto-container">
         <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="page-header"
-            >
-            <h1 className="page-title">Agregar Categorías</h1>
-            <p className="page-subtitle">
-                Complete el formulario para agregar una nueva categoría
-            </p>
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="page-header"
+        >
+          <h1 className="page-title">Agregar categorías</h1>
+          <p className="page-subtitle">Complete el formulario para agregar una nueva categoría</p>
         </motion.div>
-          <motion.form
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="producto-form"
-            onSubmit={handleSubmit}
-          >
-            <div className="form-section">
-              <h2 className="section-title">Información de la categoría</h2>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="nombre">Nombre de la categoría*</label>
-                  <input
-                    type="text"
-                    id="nombre"
-                    name="nombre"
-                    className="input-field"
-                    value={formCategoria.nombre}
-                    onChange={handleCategoriaChange}
-                    required
-                    disabled={submitting}
-                  />
-                </div>
+        <motion.form
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="producto-form"
+          onSubmit={handleSubmit}
+        >
+          <div className="form-section">
+            <h2 className="section-title">Información de la categoría</h2>
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="nombre">Nombre de la categoría*</label>
+                <input
+                  type="text"
+                  id="nombre"
+                  name="nombre"
+                  className="input-field"
+                  value={formCategoria.nombre}
+                  onChange={handleCategoriaChange}
+                  required
+                  disabled={submitting}
+                />
               </div>
             </div>
+          </div>
 
-            <div className="form-actions">
-              <button type="submit" className="btn btn-primary" disabled={submitting}>
-                {submitting ? (
-                  <>
-                    <FiLoader className="btn-icon spinner" /> Guardando...
-                  </>
-                ) : (
-                  <>
-                    <FiSave className="btn-icon" /> Guardar
-                  </>
-                )}
-              </button>
-              <button type="button" className="btn btn-outline" onClick={handleReset} disabled={submitting}>
-                <FiX className="btn-icon" /> Cancelar
-              </button>
-            </div>
-          </motion.form>
+          <div className="form-actions">
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting ? (
+                <>
+                  <FiLoader className="btn-icon spinner" /> Guardando...
+                </>
+              ) : (
+                <>
+                  <FiSave className="btn-icon" /> Guardar
+                </>
+              )}
+            </button>
+            <button type="button" className="btn btn-outline" onClick={handleReset} disabled={submitting}>
+              <FiX className="btn-icon" /> Cancelar
+            </button>
+          </div>
+        </motion.form>
       </div>
     </Layout>
   )

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FiMenu, FiX } from 'react-icons/fi';
 import '../../styles/navbar.css';
-import logo from '../../assets/logo.png'; // Asegúrate de tener un logo en esta ruta
+import logo from '../../assets/logo.png';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -16,7 +16,7 @@ const Navbar = () => {
 
   const menuItems = [
     { title: 'Productos', path: '/productos' },
-    { title: 'Agregar Producto', path: '/agregar-producto' },
+    { title: 'Agregar producto', path: '/agregar-producto' },
     { title: 'Proveedores', path: '/proveedores' },
     { title: 'Categorías', path: '/categorias' },
   ];
@@ -56,7 +56,7 @@ const Navbar = () => {
               }}
               className="btn btn-outline ml-4"
             >
-              Cerrar Sesión
+              Cerrar sesión
             </button>
           )}
         </div>
