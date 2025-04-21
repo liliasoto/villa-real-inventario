@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = (username, password) => {
     // Autenticación simple
-    if (username === 'xotchil' && password === 'PegazaWEB123') {
+    if (username === 'xochitl' && password === 'PegazaWEB123') {
       const userData = { username, name: 'Administrador' };
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
