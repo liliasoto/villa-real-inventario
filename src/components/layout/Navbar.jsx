@@ -54,7 +54,7 @@ const Navbar = () => {
                 logout();
                 setIsOpen(false);
               }}
-              className="btn btn-outline ml-4"
+              className="btn btn-outline logout-btn ml-4"
             >
               Cerrar sesión
             </button>
